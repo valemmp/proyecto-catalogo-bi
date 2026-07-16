@@ -1,11 +1,18 @@
 # from openai import OpenAI    # <- para activar la api de chatgpt
 import ollama
-usar_OpenAI = False
+import logging as log
+usar_OpenAI = False  # <- cambiar a True en caso de chatgpt
+
 
 def optimizar_productos(nombre):
     if usar_OpenAI:
-        # configuración de openAI
-        return "Respuesta desde OpenAI"
+        try:
+            # OpenAI activada
+            return "respuesta"
+
+        except Exception as e:
+            log.error(f"Error usando OpenAI: {e}")
+            return "No fue posible optimizar el producto"
     else:
         try:
             prompt = f"""
@@ -21,4 +28,5 @@ def optimizar_productos(nombre):
             respuesta = ollama.chat(model='llama3', messages=[{'role': 'user', 'content': prompt}])
             return respuesta['message']['content'].strip()
         except Exception as e:
-            return f"Error: {e}"
+            log.error(f"Error optimizando producto {nombre}: {e}")
+            return "No fue posible optimizar el producto"

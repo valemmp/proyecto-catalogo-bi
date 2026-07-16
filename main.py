@@ -1,48 +1,63 @@
 import pandas as pd
 import datetime
-import os
+import logging as log
+
+from exportador import guardar_catalogo
+from validaciones import validar_catalogo, validar_columnas
 from utils import preparar_carpeta
 from procesador_ia import optimizar_productos
+from limpiador import limpiar_texto
 
-# para ver las columnas en python
-pd.set_option('display.max_columns', None)
-pd.set_option('display.width', 1000)
-# pd.set_option('display.max_rows', None)
+# maostrar todas las columnas en la consola
+pd.set_option("display.max_columns", None)
+pd.set_option("display.width", 1000)
 
-# creacion de la carpeta para el csv de salida
-carpeta_salida = 'output'
-preparar_carpeta(carpeta_salida)
+# crear carpeta de salida
+preparar_carpeta("output")
+# crear carpeta de logs
+preparar_carpeta("logs")
 
-df = pd.read_csv('catalogo.csv')
+log.basicConfig(filename="logs/pipeline.log", level=log.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
-# limpieza de los datos
-df['nombre_producto_limpio'] = df['nombre_producto'].str.replace(r'[^a-zA-Z0-9\s]', '', regex=True)
-df['nombre_producto_limpio'] = df['nombre_producto_limpio'].str.replace(r'\s+', ' ', regex=True)
-df['nombre_producto_limpio'] = df['nombre_producto_limpio'].str.title()
 
-df['es_valido'] = df['nombre_producto_limpio'].fillna('').str.strip().str.len() > 0
+log.info("Inicio del pipeline")
+# leer el catalogo de productos
+try:
+    df = pd.read_csv("catalogo.csv")
+    log.info(f"Catálogo cargado correctamente: {len(df)} productos")
+    validar_columnas(df)
 
-df['margen_positivo'] = df['precio_venta'] > df['costo']
-df['precio_valido'] = df['precio_venta'] > 0
+except Exception as e:
+    log.error(f"Error leyendo catálogo: {e}")
+    raise
 
-df['estado'] = 'OK'
-df.loc[~df['es_valido'] | ~df['precio_valido'] | ~df['margen_positivo'], 'estado'] = 'Error'
+# limpiar los datos
+df["nombre_producto_limpio"] = df["nombre_producto"].apply(limpiar_texto)
+log.info("Limpieza de productos completada")
 
-df_validos = df[df['estado'] == 'OK'].copy()
-df_errores = df[df['estado'] == 'Error'].copy()
+# validar los datos
+df_validos, df_errores = validar_catalogo(df)
+log.info(f"Productos listos para IA: {len(df_validos)}")
 
-if len(df_validos) > 0:
-    print("Procesando los nombres de los productos con IA...")
-    df_validos['descripcion_ia'] = df_validos['nombre_producto_limpio'].apply(optimizar_productos)
+# procesamiento con IA
+if not df_validos.empty:
+    log.info("Procesando productos con IA")
+    df_validos["descripcion_ia"] = (df_validos["nombre_producto_limpio"].apply(optimizar_productos))
+    log.info("Optimización con IA completada")
+else:
+    log.info("No hay productos válidos para procesar con IA")
 
+# unir
 df_final = pd.concat([df_validos, df_errores])
 
-df_final['descripcion_ia'] = df_final['descripcion_ia'].fillna('Sin optimización')
-df_final['fecha_proceso'] = datetime.datetime.now().strftime("%Y-%m")
-mes_actual = datetime.datetime.now().strftime("%Y-%m")
-nombre_archivo = f"catalogo_{mes_actual}.csv"
-ruta_completa = os.path.join(carpeta_salida, nombre_archivo)
-df_final.to_csv(ruta_completa, index=False, encoding='utf-8-sig', sep=';')
+df_final["descripcion_ia"] = df_final["descripcion_ia"].fillna("Sin optimización")
 
-print(df_final[['id_producto', 'nombre_producto', 'descripcion_ia', 'estado']])
-print('Se creó la carpeta "output" y el archivo .csv')
+
+fecha_actual = datetime.datetime.now().strftime("%Y-%m")
+df_final["fecha_proceso"] = fecha_actual
+
+ruta_completa = guardar_catalogo(df_final, "output")
+log.info(f"Archivo listo: {ruta_completa}")
+
+# notificacion
+log.info("Proceso finalizado correctamente")
