@@ -3,6 +3,7 @@ import datetime
 import logging as log
 import os
 
+from concurrent.futures import ThreadPoolExecutor
 from extractor_atributos import extraer_atributos
 from exportador import guardar_catalogo
 from proyecto.config import SEPARADOR_CSV
@@ -10,7 +11,8 @@ from validaciones import validar_catalogo, validar_columnas
 from utils import preparar_carpeta
 from procesador_ia import optimizar_productos
 from limpiador import limpiar_texto
-from config import (CATALOGO,CARPETA_SALIDA,CARPETA_LOGS)
+from logs_config import configurar_log
+from config import (CATALOGO,CARPETA_SALIDA,CARPETA_LOGS, HILOS, PROCESAR_PARALELO, OPTIMIZAR_TITULOS)
 
 def pipeline():
     print("INICIO DEL PIPELINE")
@@ -23,7 +25,8 @@ def pipeline():
     # crear carpeta de logs
     preparar_carpeta(CARPETA_LOGS)
 
-    log.basicConfig(filename=os.path.join(CARPETA_LOGS, "pipeline.log"),level=log.INFO,format="%(asctime)s - %(levelname)s - %(message)s")
+    # log.basicConfig(filename=os.path.join(CARPETA_LOGS, "pipeline.log"),level=log.INFO,format="%(asctime)s - %(levelname)s - %(message)s")
+    configurar_log()
 
     log.info("Inicio del pipeline")
     # leer el catalogo de productos
@@ -45,16 +48,24 @@ def pipeline():
     log.info(f"Productos listos para IA: {len(df_validos)}")
 
     if not df_validos.empty:
-        log.info("Procesando productos con IA")
+        if PROCESAR_PARALELO:
+            log.info(f"Modo de procesamiento: Paralelo")
+            with ThreadPoolExecutor(max_workers=HILOS) as executor:
+                atributos_data = list(executor.map(extraer_atributos, df_validos["nombre_producto_limpio"]))
+                if OPTIMIZAR_TITULOS:
+                    titulos_optimizados = list(executor.map(optimizar_productos, df_validos["nombre_producto_limpio"]))
+        else:
+            log.info(f"Modo de procesamiento: Serie")
+            atributos_data = [extraer_atributos(prod) for prod in df_validos["nombre_producto_limpio"]]
 
-        df_validos["descripcion_ia"] = df_validos["nombre_producto_limpio"].apply(optimizar_productos)
-        log.info("Optimización con IA completada")
+            if OPTIMIZAR_TITULOS:
+                titulos_optimizados = [optimizar_productos(prod) for prod in df_validos["nombre_producto_limpio"]]
 
-        log.info("Extrayendo atributos de los productos...")
-        atributos_data = df_validos["nombre_producto_limpio"].apply(extraer_atributos).tolist()
         df_atributos = pd.DataFrame(atributos_data)
 
         df_validos = pd.concat([df_validos.reset_index(drop=True), df_atributos.reset_index(drop=True)], axis=1)
+        if OPTIMIZAR_TITULOS:
+            df_validos["descripcion_ia"] = titulos_optimizados
         log.info("Extracción de atributos completada")
     else:
         log.info("No hay productos válidos para procesar con IA")
@@ -63,11 +74,13 @@ def pipeline():
     # unir
     df_final = pd.concat([df_validos, df_errores])
 
-    df_final["descripcion_ia"] = df_final["descripcion_ia"].fillna("Sin optimización")
+    if "descripcion_ia" in df_final.columns:
+        df_final["descripcion_ia"] = df_final["descripcion_ia"].fillna("Sin optimización")
+    else:
+        df_final["descripcion_ia"] = "Sin optimización"
 
-
-    fecha_actual = datetime.datetime.now().strftime("%Y-%m")
-    df_final["fecha_proceso"] = fecha_actual
+    fecha_completa = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    df_final["fecha_proceso"] = fecha_completa
 
     ruta_completa = guardar_catalogo(df_final, CARPETA_SALIDA)
 

@@ -6,9 +6,9 @@ from config import ENCODING, SEPARADOR_CSV
 def guardar_catalogo(df, carpeta_salida):
 
     try:
-        fecha_actual = datetime.datetime.now().strftime("%Y-%m")
+        fecha_completa = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 
-        nombre_archivo = f"catalogo_{fecha_actual}.csv"
+        nombre_archivo = f"catalogo_{fecha_completa}.csv"
 
         ruta_completa = os.path.join(carpeta_salida, nombre_archivo)
 

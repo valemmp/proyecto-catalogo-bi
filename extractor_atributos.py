@@ -1,9 +1,11 @@
 import json
 import logging as log
+import time
 
 from procesador_ia import consultar_ia
 
 def extraer_atributos(nombre_producto):
+    time.sleep(0.1)
     prompt = f"""
     Sos un especialista en catalogación de productos tecnológicos.
     
@@ -15,7 +17,7 @@ def extraer_atributos(nombre_producto):
     3. Si un atributo no existe o no estás seguro, devolvé null.
     4. NO inventes información técnica (especificaciones que no estén).
     5. Respondé EXCLUSIVAMENTE un JSON válido, sin texto adicional. Nada de saludos ni nada mas.
-
+    Por ejemplo: Hay marcas como "Autel", "Boya", "HardKraft", "Ejeas", "Nimbot", "AltaNet", "Fnirsi", "TKStar", etc. 
     Formato JSON:
 
     {{
