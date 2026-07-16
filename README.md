@@ -61,7 +61,6 @@ Power BI / Análisis
 
 ## Próximas mejoras
 
-- Extracción automática de características (marca, modelo, color, capacidad, material) mediante IA.
 - Consulta de precios desde APIs de eCommerce para detectar variaciones.
-- Procesamiento paralelo de productos para mejorar el rendimiento.
-- Integración directa con Power BI o una base de datos.
+- Integración directa con bases de datos relacionales (SQL Server, PostgreSQL) para reemplazar el CSV.
+- Despliegue del pipeline en un contenedor Docker para ejecución programada en servidores.

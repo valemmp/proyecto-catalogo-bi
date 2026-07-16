@@ -1,7 +1,6 @@
 import pandas as pd
 import datetime
 import logging as log
-import os
 
 from concurrent.futures import ThreadPoolExecutor
 from extractor_atributos import extraer_atributos

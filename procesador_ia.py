@@ -35,28 +35,3 @@ def optimizar_productos(nombre):
         return respuesta
     else:
         return "No fue posible optimizar el producto"
-
-
-
-
-def extraer_atributos(nombre_producto):
-    prompt = f"""
-    Sos un especialista en catalogación de productos tecnológicos.
-    Extraé únicamente los datos que estén presentes en el nombre: '{nombre_producto}'.
-    NO inventes información. Si un atributo no existe devolvé null.
-    Respondé EXCLUSIVAMENTE un JSON válido.
-
-    Formato:
-    {{"marca": null, "categoria": null, "modelo": null, "color": null, "tipo": null, "conexion": null}}
-    """
-
-    respuesta = consultar_ia(prompt)
-
-    if respuesta:
-        try:
-            respuesta = respuesta.replace("```json", "").replace("```", "")
-            return json.loads(respuesta)
-        except json.JSONDecodeError as e:
-            log.error(f"Error parseando JSON para {nombre_producto}: {e}")
-
-    return {"marca": None, "categoria": None, "modelo": None,"color": None, "tipo": None, "conexion": None}
