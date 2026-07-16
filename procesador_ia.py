@@ -2,7 +2,7 @@
 import ollama
 import logging as log
 usar_OpenAI = False  # <- cambiar a True en caso de chatgpt
-
+from config import MODELO_IA
 
 def optimizar_productos(nombre):
     if usar_OpenAI:
@@ -25,7 +25,7 @@ def optimizar_productos(nombre):
 
             Titulo a optimizar: {nombre}
             """
-            respuesta = ollama.chat(model='llama3', messages=[{'role': 'user', 'content': prompt}])
+            respuesta = ollama.chat(model=MODELO_IA, messages=[{'role': 'user', 'content': prompt}])
             return respuesta['message']['content'].strip()
         except Exception as e:
             log.error(f"Error optimizando producto {nombre}: {e}")

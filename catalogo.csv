@@ -1,5 +1,16 @@
-sku,nombre_producto,descripcion,precio_costo,precio_venta
-A001,Silla Gamer Roja,"Silla ergonómica de cuero con refuerzo",100,150
-A002,SILLA GAMER AZUL,"Silla de cuero gaming profesional",120,110
-B001,Teclado Mecánico,"Teclado rgb mecanico switches red",50,80
-B002,teclado mecanico,"Teclado rgb mecanico switches blue",50,20
+id_producto,nombre_producto,costo,precio_venta
+1,"Mouse Logitech G203 Gaming Negro",15000,22999
+2,"MOUSE LOGITECH G203!!!",15000,23000
+3,"Teclado Mecánico Redragon Kumara K552 RGB",28000,39999
+4,"Notebook Lenovo IdeaPad 3 Ryzen 5 8GB RAM SSD 512GB",450000,620000
+5,"Auriculares HyperX Cloud Stinger Core Wireless",55000,79999
+6,"Cable HDMI 2.1 Ultra HD 2 Metros",4500,7999
+7,"Monitor Samsung Odyssey G5 27"" 165Hz",180000,259999
+8,"",15000,25000
+9,"Joystick PS5 DualSense Blanco",65000,60000
+10,"Webcam Logitech C920 PRO HD",32000,0
+11,"Móuse Lógitech G502 Héró",22000,35999
+12,"SSD Kingston NV2 1TB M.2 NVMe",48000,69999
+13,"Pendrive SanDisk Ultra 64GB USB 3.0",6000,9500
+14,"Router TP-Link Archer AX23 WiFi 6",52000,74999
+15,"Mouse Gamer Redragon Cobra M711 RGB",12000,21000

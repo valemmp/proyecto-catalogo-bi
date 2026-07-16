@@ -1,7 +1,7 @@
 import os
 import datetime
 import logging as log
-
+from config import ENCODING, SEPARADOR_CSV
 
 def guardar_catalogo(df, carpeta_salida):
 
@@ -12,7 +12,7 @@ def guardar_catalogo(df, carpeta_salida):
 
         ruta_completa = os.path.join(carpeta_salida, nombre_archivo)
 
-        df.to_csv(ruta_completa,index=False,encoding="utf-8-sig",sep=";")
+        df.to_csv(ruta_completa,index=False,encoding=ENCODING,sep=SEPARADOR_CSV)
 
         log.info(f"Archivo generado correctamente: {ruta_completa}")
 

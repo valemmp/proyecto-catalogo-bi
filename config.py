@@ -1,0 +1,6 @@
+CATALOGO = "catalogo.csv"
+CARPETA_SALIDA = "output"
+CARPETA_LOGS = "logs"
+MODELO_IA = "llama3"
+ENCODING = "utf-8-sig"
+SEPARADOR_CSV = ";"
