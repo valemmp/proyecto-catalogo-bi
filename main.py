@@ -2,6 +2,7 @@ import pandas as pd
 import datetime
 import logging as log
 
+from tqdm import tqdm
 from concurrent.futures import ThreadPoolExecutor
 from extractor_atributos import extraer_atributos
 from exportador import guardar_catalogo
@@ -50,9 +51,15 @@ def pipeline():
         if PROCESAR_PARALELO:
             log.info(f"Modo de procesamiento: Paralelo")
             with ThreadPoolExecutor(max_workers=HILOS) as executor:
-                atributos_data = list(executor.map(extraer_atributos, df_validos["nombre_producto_limpio"]))
+
+                productos = df_validos["nombre_producto_limpio"].tolist()
+
+                atributos_data = list(
+                    tqdm(executor.map(extraer_atributos, productos),total=len(productos),desc="Extrayendo atributos",unit="producto"))
+
                 if OPTIMIZAR_TITULOS:
-                    titulos_optimizados = list(executor.map(optimizar_productos, df_validos["nombre_producto_limpio"]))
+                    titulos_optimizados = list(
+                        tqdm(executor.map(optimizar_productos, productos),total=len(productos),desc="Optimizando nombres",unit="producto"))
         else:
             log.info(f"Modo de procesamiento: Serie")
             atributos_data = [extraer_atributos(prod) for prod in df_validos["nombre_producto_limpio"]]
@@ -60,23 +67,31 @@ def pipeline():
             if OPTIMIZAR_TITULOS:
                 titulos_optimizados = [optimizar_productos(prod) for prod in df_validos["nombre_producto_limpio"]]
 
-        df_atributos = pd.DataFrame(atributos_data)
+        df_atributos = pd.DataFrame(atributos_data).reset_index(drop=True)
+        df_validos = df_validos.reset_index(drop=True)
 
-        df_validos = pd.concat([df_validos.reset_index(drop=True), df_atributos.reset_index(drop=True)], axis=1)
+        df_atributos = df_atributos.rename(columns={"marca": "marca_extraida","categoria": "categoria_extraida"})
+
+        df_validos = pd.concat([df_validos, df_atributos],axis=1)
+
         if OPTIMIZAR_TITULOS:
-            df_validos["descripcion_ia"] = titulos_optimizados
+            df_validos["nombre_optimizado"] = titulos_optimizados
+
         log.info("Extracción de atributos completada")
     else:
         log.info("No hay productos válidos para procesar con IA")
+        df_validos["nombre_optimizado"] = "Sin optimización"
 
 
-    # unir
-    df_final = pd.concat([df_validos, df_errores])
+    df_validos = df_validos.reset_index(drop=True)
+    df_errores = df_errores.reset_index(drop=True)
 
-    if "descripcion_ia" in df_final.columns:
-        df_final["descripcion_ia"] = df_final["descripcion_ia"].fillna("Sin optimización")
+    df_final = pd.concat([df_validos, df_errores],ignore_index=True)
+
+    if "nombre_optimizado" not in df_final.columns:
+        df_final["nombre_optimizado"] = "Sin optimización"
     else:
-        df_final["descripcion_ia"] = "Sin optimización"
+        df_final["nombre_optimizado"] = df_final["nombre_optimizado"].fillna("Sin optimización")
 
     fecha_completa = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
     df_final["fecha_proceso"] = fecha_completa

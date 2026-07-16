@@ -4,7 +4,21 @@ import time
 import re
 
 from procesador_ia import consultar_ia
-from config import MARCAS_CONOCIDAS
+from config import MARCAS_CONOCIDAS, ATRIBUTOS_ESPERADOS
+
+def normalizar_atributos(datos, marca_detectada):
+    atributos = ATRIBUTOS_ESPERADOS.copy()
+
+    for clave in atributos:
+        if clave in datos:
+            atributos[clave] = datos[clave]
+
+    if marca_detectada:
+        atributos["marca"] = marca_detectada
+    else:
+        atributos["marca"] = None
+
+    return atributos
 
 def extraer_atributos(nombre_producto):
     time.sleep(0.1)
@@ -19,16 +33,42 @@ def extraer_atributos(nombre_producto):
     Tu tarea es separar correctamente la MARCA del MODELO.
     
     REGLAS OBLIGATORIAS:
-    
-    1. La marca y el modelo son atributos diferentes.
-    2. Si una marca aparece explícitamente en el nombre, debes extraerla en "marca".
-    3. Nunca incluyas la marca dentro del valor de "modelo".
-    4. El modelo debe contener únicamente el nombre o código del modelo, sin la marca.
-    5. NO inventes información.
-    6. Si un atributo no aparece claramente, devuelve null.
-    7. Conservá los nombres y códigos de modelo presentes en el producto.
-    8. Respondé EXCLUSIVAMENTE con un JSON válido.
-    9. No agregues explicaciones ni texto adicional.
+
+        1. La marca y el modelo son atributos diferentes.
+        2. Si una marca aparece explícitamente en el nombre del producto, debes extraerla en "marca".
+        3. Si una marca NO aparece claramente en el nombre del producto, devuelve null.
+           NO inventes marcas.
+        4. Nunca interpretes palabras genéricas como "eje", "gimbal", "impresora",
+           "intercomunicador", "grabadora" o "estabilizador" como marcas.
+        5. Nunca incluyas la marca dentro del valor de "modelo".
+        6. El modelo debe contener únicamente el nombre o código del modelo,
+           sin la marca.
+        7. COPIA EXACTAMENTE los nombres, letras, números y códigos técnicos
+           presentes en el producto original.
+        8. NO corrijas errores ortográficos del nombre del producto.
+        9. NO cambies letras, números ni códigos.
+           Por ejemplo:
+           "Ender 3" nunca puede convertirse en "Endeer 3".
+           "Boya" nunca puede convertirse en "Boia".
+           "V2" nunca puede convertirse en "V3".
+        10. NO inventes información.
+        11. Si un atributo no aparece claramente en el nombre original, devuelve null.
+        12. Solo puedes separar la información existente en el nombre original.
+            No puedes agregar información externa.
+        13. Respondé EXCLUSIVAMENTE con un JSON válido.
+        14. No agregues explicaciones ni texto adicional.
+        
+        Para cada atributo:
+
+        - marca: solo una marca explícitamente presente en el nombre.
+        - categoria: categoría claramente identificable a partir del nombre.
+        - modelo: nombre o código del modelo presente literalmente en el nombre.
+        - color: solo si aparece explícitamente.
+        - tipo: solo si aparece explícitamente.
+        - conexion: solo si aparece explícitamente.
+        
+        Si no podés identificar un atributo con seguridad a partir del nombre,
+        devuelve null.
     
     EJEMPLOS:
     
@@ -87,7 +127,7 @@ def extraer_atributos(nombre_producto):
     """
 
     respuesta = consultar_ia(prompt)
-    dict_vacio = {"marca": marca_detectada, "categoria": None, "modelo": None, "color": None, "tipo": None, "conexion": None}
+    dict_vacio = normalizar_atributos({}, marca_detectada)
 
     if respuesta:
         try:
@@ -97,9 +137,7 @@ def extraer_atributos(nombre_producto):
                 datos = json.loads(respuesta_limpia)
 
             if datos:
-                if marca_detectada:
-                    datos["marca"] = marca_detectada
-                return datos
+                return normalizar_atributos(datos, marca_detectada)
             return dict_vacio
 
 
@@ -109,10 +147,13 @@ def extraer_atributos(nombre_producto):
     return dict_vacio
 
 def detectar_marca(nombre_producto):
+
     nombre = nombre_producto.lower()
     for clave, marca in MARCAS_CONOCIDAS.items():
-        if clave in nombre:
+        patron = rf"\b{re.escape(clave)}\b"
+        if re.search(patron, nombre):
             return marca
+
     return None
 
 def extraer_json_de_texto(texto):
