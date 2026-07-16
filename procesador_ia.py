@@ -1,32 +1,62 @@
 # from openai import OpenAI    # <- para activar la api de chatgpt
 import ollama
 import logging as log
-usar_OpenAI = False  # <- cambiar a True en caso de chatgpt
+import json
 from config import MODELO_IA
+
+usar_OpenAI = False  # <- cambiar a True en caso de chatgpt
+
+def consultar_ia(prompt):
+    try:
+        respuesta = ollama.chat(model=MODELO_IA, messages=[{'role': 'user', 'content': prompt}])
+        return respuesta['message']['content'].strip()
+    except Exception as e:
+        log.error(f"Error en la comunicación con {MODELO_IA}: {e}")
+        return None
+
 
 def optimizar_productos(nombre):
     if usar_OpenAI:
-        try:
-            # OpenAI activada
-            return "respuesta"
+        # futura conexión con openAI
+        return "respuesta"
 
-        except Exception as e:
-            log.error(f"Error usando OpenAI: {e}")
-            return "No fue posible optimizar el producto"
+    prompt = f"""
+    Sos un experto en SEO de la tecnología. Tu única función es devolver el título optimizado en español.
+    Reglas estrictas:
+    1. Conservá la marca y modelo real.
+    2. NO inventes características técnicas.
+    3. NO respondas explicaciones.
+    4. Solo devuelve el título. Nada más.
+
+    Titulo a optimizar: {nombre}
+    """
+    respuesta = consultar_ia(prompt)
+    if respuesta:
+        return respuesta
     else:
-        try:
-            prompt = f"""
-            Sos un experto en SEO de la tecnología. Tu única función es devolver el título optimizado en español.
-            Reglas estrictas:
-            1. Conservá la marca y modelo real.
-            2. NO inventes características técnicas (GB, modelos, etc) si no están en el nombre.
-            3. NO respondas con saludos, introducciones ni explicaciones.
-            4. Solo devuelve el título, nada más.
+        return "No fue posible optimizar el producto"
 
-            Titulo a optimizar: {nombre}
-            """
-            respuesta = ollama.chat(model=MODELO_IA, messages=[{'role': 'user', 'content': prompt}])
-            return respuesta['message']['content'].strip()
-        except Exception as e:
-            log.error(f"Error optimizando producto {nombre}: {e}")
-            return "No fue posible optimizar el producto"
+
+
+
+def extraer_atributos(nombre_producto):
+    prompt = f"""
+    Sos un especialista en catalogación de productos tecnológicos.
+    Extraé únicamente los datos que estén presentes en el nombre: '{nombre_producto}'.
+    NO inventes información. Si un atributo no existe devolvé null.
+    Respondé EXCLUSIVAMENTE un JSON válido.
+
+    Formato:
+    {{"marca": null, "categoria": null, "modelo": null, "color": null, "tipo": null, "conexion": null}}
+    """
+
+    respuesta = consultar_ia(prompt)
+
+    if respuesta:
+        try:
+            respuesta = respuesta.replace("```json", "").replace("```", "")
+            return json.loads(respuesta)
+        except json.JSONDecodeError as e:
+            log.error(f"Error parseando JSON para {nombre_producto}: {e}")
+
+    return {"marca": None, "categoria": None, "modelo": None,"color": None, "tipo": None, "conexion": None}
