@@ -121,7 +121,7 @@ El proceso genera un catálogo final listo para análisis y visualización.
 
 Ejemplo del dashboard generado:
 
-![Dashboard del catálogo](screenshots/dashboard-general.png)
+![Dashboard del catálogo](screenshots/dashboard.png)
 
 ---
 
