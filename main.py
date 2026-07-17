@@ -6,13 +6,12 @@ from tqdm import tqdm
 from concurrent.futures import ThreadPoolExecutor
 from extractor_atributos import extraer_atributos
 from exportador import guardar_catalogo
-from proyecto.config import SEPARADOR_CSV
-from validaciones import validar_catalogo, validar_columnas
+from validaciones import validar_catalogo, validar_columnas, agregar_calidad_datos, clasificar_calidad
 from utils import preparar_carpeta
 from procesador_ia import optimizar_productos
 from limpiador import limpiar_texto
 from logs_config import configurar_log
-from config import (CATALOGO,CARPETA_SALIDA,CARPETA_LOGS, HILOS, PROCESAR_PARALELO, OPTIMIZAR_TITULOS)
+from config import (CATALOGO,CARPETA_SALIDA,CARPETA_LOGS, HILOS, PROCESAR_PARALELO, SEPARADOR_CSV,OPTIMIZAR_TITULOS, COLUMNAS_SALIDA)
 
 def pipeline():
     print("INICIO DEL PIPELINE")
@@ -52,14 +51,14 @@ def pipeline():
             log.info(f"Modo de procesamiento: Paralelo")
             with ThreadPoolExecutor(max_workers=HILOS) as executor:
 
-                productos = df_validos["nombre_producto_limpio"].tolist()
+                productos_limpios = df_validos["nombre_producto_limpio"].tolist()
 
                 atributos_data = list(
-                    tqdm(executor.map(extraer_atributos, productos),total=len(productos),desc="Extrayendo atributos",unit="producto"))
+                    tqdm(executor.map(extraer_atributos, productos_limpios),total=len(productos_limpios),desc="Extrayendo atributos",unit="producto"))
 
                 if OPTIMIZAR_TITULOS:
                     titulos_optimizados = list(
-                        tqdm(executor.map(optimizar_productos, productos),total=len(productos),desc="Optimizando nombres",unit="producto"))
+                        tqdm(executor.map(optimizar_productos, productos_limpios),total=len(productos_limpios), desc="Optimizando nombres", unit="producto"))
         else:
             log.info(f"Modo de procesamiento: Serie")
             atributos_data = [extraer_atributos(prod) for prod in df_validos["nombre_producto_limpio"]]
@@ -67,15 +66,32 @@ def pipeline():
             if OPTIMIZAR_TITULOS:
                 titulos_optimizados = [optimizar_productos(prod) for prod in df_validos["nombre_producto_limpio"]]
 
-        df_atributos = pd.DataFrame(atributos_data).reset_index(drop=True)
         df_validos = df_validos.reset_index(drop=True)
+        df_atributos = pd.DataFrame(atributos_data).reset_index(drop=True)
 
-        df_atributos = df_atributos.rename(columns={"marca": "marca_extraida","categoria": "categoria_extraida"})
 
-        df_validos = pd.concat([df_validos, df_atributos],axis=1)
+        for columna in df_atributos.columns:
+            if columna not in ["marca", "categoria"]:
+                df_validos[columna] = df_atributos[columna]
+
+        if "marca" not in df_validos.columns:
+            df_validos["marca"] = None
+
+        if "categoria" not in df_validos.columns:
+            df_validos["categoria"] = None
+
+        if "marca" in df_atributos.columns:
+            df_validos["marca"] = df_atributos["marca"].fillna(df_validos["marca"])
+            df_validos["marca"] = df_validos["marca"].str.lower().replace("otro", None)
+
+        if "categoria" in df_atributos.columns:
+            df_validos["categoria"] = df_atributos["categoria"].fillna(df_validos["categoria"])
 
         if OPTIMIZAR_TITULOS:
             df_validos["nombre_optimizado"] = titulos_optimizados
+            df_validos["nombre_optimizado"] = (df_validos["nombre_optimizado"].str.replace('"', '', regex=False).str.strip())
+        else:
+            df_validos["nombre_optimizado"] = df_validos["nombre_producto"]
 
         log.info("Extracción de atributos completada")
     else:
@@ -95,6 +111,14 @@ def pipeline():
 
     fecha_completa = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
     df_final["fecha_proceso"] = fecha_completa
+    df_final = agregar_calidad_datos(df_final)
+    df_final["nivel_calidad"] = df_final["calidad_datos"].apply(clasificar_calidad)
+
+    for columna in COLUMNAS_SALIDA:
+        if columna not in df_final.columns:
+            df_final[columna] = None
+
+    df_final = df_final[COLUMNAS_SALIDA]
 
     ruta_completa = guardar_catalogo(df_final, CARPETA_SALIDA)
 

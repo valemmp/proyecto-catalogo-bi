@@ -1,31 +1,26 @@
-id_producto,nombre_producto,precio_venta,costo,estado,marca,categoria
-101,Boya Lavalier,25000,15000,activo,Boya,microfono
-102,Boya Shotgun,45000,28000,activo,Boya,microfono
-103,Boya Inalambrica,85000,50000,activo,Boya,microfono
-104,Eje X Ender 3,12000,15000,activo,Fjeas,Ejes
-105,Eje Y Ender 3,12000,8000,activo,Fjeas,Ejes
-106,Estabilizador Pro,150000,90000,activo,otro,estabilizador
-107,Grabadora Zoom H1,120000,75000,activo,otro,grabadora de voz
-108,Impresora Etiquetas,60000,40000,activo,Niimbot,impresora de etiquetas
-109,Gimbal ZHIYUN,210000,130000,activo,gimbal,gimbal
-110,Intercomunicador,35000,20000,activo,otro,intercomunicador
-111,Scanner Automotriz,95000,105000,activo,otro,scanner automotriz
-112,Boya Lavalier V2,28000,16000,activo,Boya,microfono
-113,Boya Shotgun V2,48000,29000,activo,Boya,microfono
-114,Eje X Reforzado,15000,16000,activo,Fjeas,Ejes
-115,Eje Y Reforzado,15000,9000,activo,Fjeas,Ejes
-116,Estabilizador Lite,90000,55000,activo,otro,estabilizador
-117,Grabadora Zoom H4,250000,160000,activo,otro,grabadora de voz
-118,Impresora Etiquetas Pro,85000,55000,activo,Niimbot,impresora de etiquetas
-119,Gimbal ZHIYUN V2,240000,145000,activo,gimbal,gimbal
-120,Intercomunicador Pro,55000,32000,activo,otro,intercomunicador
-121,Scanner Bluetooth,110000,120000,activo,otro,scanner automotriz
-122,Boya Mini,18000,,activo,Boya,microfono
-123,Eje Z Ender 3,18000,12000,activo,Fjeas,Ejes
-124,Estabilizador 3 Ejes,180000,110000,activo,otro,estabilizador
-125,Grabadora Portatil,95000,60000,activo,otro,grabadora de voz
-126,Niimbot D11,45000,30000,activo,Niimbot,impresora de etiquetas
-127,Gimbal de mano,150000,95000,activo,gimbal,gimbal
-128,Intercomunicador V2,40000,22000,activo,otro,intercomunicador
-129,Scanner Universal,130000,140000,activo,otro,scanner automotriz
-130,Boya Clip-on,22000,14000,activo,Boya,microfono
+id_producto,nombre_producto,precio_venta,costo
+201,BOYA Lavalier Microfono,25000,15000
+202,BOYA Shotgun Profesional,48000,30000
+203,Niimbot D11 Impresora Etiquetas,45000,28000
+204,Gimbal ZHIYUN V2,210000,130000
+205,Grabadora Zoom H1,120000,75000
+206,Eje X Ender 3 Reforzado,15000,9000
+207,Autel Scanner Maxi,180000,120000
+208,Intercomunicador VHF,35000,20000
+209,Mouse Logitech G203 Negro,23000,14000
+210,Teclado Mecanico Redragon K552,55000,30000
+211,Boya Mini Lavalier!!!,18000,10000
+212,   GIMBAL    ZHIYUN   Smooth 5 ,250000,160000
+213,Impresora etiquetas niimbot b21,70000,50000
+214,Grabadora Zoom H4N Pro,260000,170000
+215,Estabilizador 3 Ejes Celular,90000,65000
+216,Eje Y Ender 3,12000,15000
+217,Scanner Automotriz Bluetooth,95000,105000
+218,Producto sin nombre,,5000
+219,Boya Inalambrica 2.4Ghz,85000,50000
+220,Autel EVO Drone,300000,200000
+221,Fjeas Eje Z Ender 3,18000,12000
+222,Niimbot D110 Impresora,45000,30000
+223,Mouse Logitech G203 Gaming Negro,23000,23000
+224,   teclado REDRAGON k530 RGB!!! ,60000,35000
+225,Camara Web Logitech C920 HD,90000,70000
