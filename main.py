@@ -12,6 +12,7 @@ from procesador_ia import optimizar_productos
 from limpiador import limpiar_texto
 from logs_config import configurar_log
 from config import (CATALOGO,CARPETA_SALIDA,CARPETA_LOGS, HILOS, PROCESAR_PARALELO, SEPARADOR_CSV,OPTIMIZAR_TITULOS, COLUMNAS_SALIDA)
+from reporte_calidad import generar_reporte_calidad, generar_reporte_errores
 
 def pipeline():
     print("INICIO DEL PIPELINE")
@@ -113,6 +114,9 @@ def pipeline():
     df_final["fecha_proceso"] = fecha_completa
     df_final = agregar_calidad_datos(df_final)
     df_final["nivel_calidad"] = df_final["calidad_datos"].apply(clasificar_calidad)
+
+    generar_reporte_calidad(df_final,CARPETA_SALIDA)
+    generar_reporte_errores(df_final,CARPETA_SALIDA)
 
     for columna in COLUMNAS_SALIDA:
         if columna not in df_final.columns:
