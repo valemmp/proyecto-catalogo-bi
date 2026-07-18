@@ -18,7 +18,7 @@ Limpieza y normalización
 Extracción de atributos
         │
         v
-Validaciones de calidad
+Validaciones de calidad y generación de reporte
         │
         v
 Optimización con IA
@@ -51,6 +51,7 @@ Implementación de reglas de negocio:
 - Control de costos.
 - Cálculo de márgenes.
 - Detección de registros incompletos.
+- Reporte de Calidad Automatizado
 
 ### Optimización con IA
 Integración con modelos de lenguaje mediante **Ollama + Llama 3** para mejorar la consistencia de nombres de productos.
@@ -82,19 +83,24 @@ El catálogo generado es utilizado como fuente de datos para un dashboard en **P
 ```text
 proyecto-catalogo-bi/
 │
-├── main.py                  # Orquestador del pipeline
-├── limpiador.py             # Limpieza de datos
-├── validaciones.py          # Reglas de calidad
-├── extractor_atributos.py   # Extracción de información
-├── procesador_ia.py         # Integración con IA
-├── exportador.py            # Generación del catálogo final
-├── logs_config.py           # Configuración de logs
-├── config.py                # Configuración general
+├── main.py                  # Orquestador principal
+├── limpiador.py             # Limpieza y normalización
+├── validaciones.py          # Reglas de lógica de negocio
+├── extractor_atributos.py   # Extracción mediante Regex/Lógica
+├── procesador_ia.py         # Integración con Ollama + Llama 3
+├── reporte_calidad.py       # Generación de métricas y reporte de errores
+├── exportador.py            # Generación de catálogos finales
+├── logs_config.py           # Configuración de logs del sistema
+├── config.py                # Configuración de variables globales
 │
-├── dashboards/
+├── dashboards/              # Reportes de Power BI
 │   └── dashboard-catalogo-productos.pbix
 │
-└── logs/
+├── screenshots/             # Evidencia visual
+│   └── dashboard.png
+│
+├── logs/                    # Historial de ejecución
+└── (archivos .csv)          # Datos de entrada y procesamiento
 ```
 
 ---
